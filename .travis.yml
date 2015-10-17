@@ -6,7 +6,10 @@ python:
 
 install:
   - pip install tox
-  
+
+script:
+  - tox
+
 addons:
   apt:
     packages:
