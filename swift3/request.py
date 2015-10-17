@@ -457,7 +457,7 @@ class Request(swob.Request):
         env['HTTP_X_AUTH_TOKEN'] = self.token
 
         if obj:
-            path = '/v1/%s/%s/%s' % (account, container, obj)
+            path = '/v1/%s/%s/%s' % (account, container, quote(obj.encode('utf8')))
         elif container:
             path = '/v1/%s/%s' % (account, container)
         else:

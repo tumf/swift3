@@ -241,6 +241,26 @@ class TestRequest(Swift3TestCase):
             self.assertTrue('Authorization' not in sw_req.headers)
             self.assertEquals(sw_req.headers['X-Auth-Token'], 'token')
 
+    def test_to_swift_req_when_object_name_contains_utf8(self):
+        container = 'bucket'
+        from urllib import unquote
+        obj = unquote('%E3%83%86%E3%82%B9%E3%83%88').decode('utf8')
+
+        method = 'GET'
+        req = Request.blank('/%s/%s' % (container, obj),
+                            environ={'REQUEST_METHOD': method},
+                            headers={'Authorization': 'AWS test:tester:hmac'})
+        with nested(patch.object(Request, 'get_response'),
+                    patch.object(Request, 'remote_user', 'authorized')) \
+                as (m_swift_resp, m_remote_user):
+
+            m_swift_resp.return_value = FakeSwiftResponse()
+            s3_req = S3AclRequest(req.environ, MagicMock())
+            sw_req = s3_req.to_swift_req(method, container, obj)
+            self.assertTrue('HTTP_AUTHORIZATION' not in sw_req.environ)
+            self.assertTrue('Authorization' not in sw_req.headers)
+            self.assertEquals(sw_req.headers['X-Auth-Token'], 'token')
+
     def test_to_swift_req_subrequest_proxy_access_log(self):
         container = 'bucket'
         obj = 'obj'
